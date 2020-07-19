@@ -57,6 +57,7 @@ public class UrlShortenerApplication {
 
         vertx = Vertx.vertx(vertxOptions);
 
+        //TODO: move the below config retreival logic in configuration.java
         ConfigRetriever retriever = ConfigRetriever.create(vertx,
                 new ConfigRetrieverOptions()
                         .setScanPeriod(60000)
@@ -73,8 +74,8 @@ public class UrlShortenerApplication {
             config = asyncResult.result();
             LOGGER.info("Configurations read successfully");
 
+            deployVerticle(Database.class, false);
             deployVerticle(Server.class, false);
-            deployVerticle(Database.class, true);
 
             promise.complete();
         });

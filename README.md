@@ -27,3 +27,6 @@ resilience
 
 config server
 [] config server dependencies
+
+scraper service to get metadata about the site
+[]

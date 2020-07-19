@@ -1,4 +1,12 @@
 {
   "worker-pool-name": "url-shortener-worker-pool",
-  "worker-pool-size": 10
+  "worker-pool-size": 10,
+  "datasource" : {
+    "host" : "127.0.0.1",
+    "port" : 27017,
+    "db_name" : "url-shortener-app",
+    "collections": {
+      "url-data": "url-data"
+    }
+  }
 }

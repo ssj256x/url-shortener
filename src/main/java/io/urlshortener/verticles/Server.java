@@ -1,5 +1,6 @@
 package io.urlshortener.verticles;
 
+import io.urlshortener.dao.URLRepository;
 import io.urlshortener.handlers.FailureHandler;
 import io.urlshortener.handlers.RequestHandler;
 import io.urlshortener.util.ApiHeaders;
@@ -32,8 +33,8 @@ public class Server extends AbstractVerticle {
     }
 
     private Router getRouter() {
-
-        RequestHandler requestHandler = new RequestHandler();
+        RequestHandler requestHandler = new RequestHandler(URLRepository.createProxy(vertx,
+                URLRepository.SERVICE_ADDRESS));
 
         Router router = Router.router(vertx);
         router.route()
