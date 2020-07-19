@@ -1,0 +1,27 @@
+Configuration:
+
+  Properties:
+    Property:
+      name: log-path
+      value: "logs"
+
+  Appenders:
+    Console:
+      name: consoleAppender
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+
+  Loggers:
+    Root:
+      level: DEBUG
+      AppenderRef:
+        - ref: consoleAppender
+
+    Logger:
+      - name: io.urlshortener
+        additivity: false
+        level: DEBUG
+        AppenderRef:
+          - ref: consoleAppender
+            level: DEBUG

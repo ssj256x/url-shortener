@@ -1,0 +1,4 @@
+{
+  "worker-pool-name": "url-shortener-worker-pool",
+  "worker-pool-size": 10
+}
