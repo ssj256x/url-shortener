@@ -21,7 +21,7 @@ public interface URLRepository {
     String SERVICE_ADDRESS = "url-repository-service";
 
     @Fluent
-    URLRepository save(URLData urlData, Handler<AsyncResult<URLData>> resultHandler);
+    URLRepository save(URLData urlData, Handler<AsyncResult<String>> resultHandler);
 
     @Fluent
     URLRepository findAll(Handler<AsyncResult<List<URLData>>> resultHandler);

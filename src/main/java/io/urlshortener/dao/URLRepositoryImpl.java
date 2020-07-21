@@ -23,8 +23,21 @@ public class URLRepositoryImpl implements URLRepository {
     }
 
     @Override
-    public URLRepository save(URLData urlData, Handler<AsyncResult<URLData>> resultHandler) {
-        return null;
+    public URLRepository save(URLData urlData, Handler<AsyncResult<String>> resultHandler) {
+
+        mongoClient.save(URLData.DB_COLLECTION,
+                urlData.toJson(),
+                ar -> {
+                    if (ar.failed()) {
+                        LOGGER.error("Error occurred while saving data");
+                        resultHandler.handle(Future.failedFuture(ar.cause()));
+                        return;
+                    }
+                    LOGGER.info("After saving {}", ar.result());
+                    resultHandler.handle(Future.succeededFuture(urlData.getUrlId()));
+                });
+
+        return this;
     }
 
     @Override
@@ -57,7 +70,34 @@ public class URLRepositoryImpl implements URLRepository {
 
     @Override
     public URLRepository findById(String id, Handler<AsyncResult<URLData>> resultHandler) {
-        return null;
+
+        mongoClient.find(URLData.DB_COLLECTION,
+                new JsonObject().put("urlId", id),
+                ar -> {
+                    if (ar.failed()) {
+                        LOGGER.error("Error occurred while fetching data");
+                        resultHandler.handle(Future.failedFuture(ar.cause()));
+                        return;
+                    }
+                    LOGGER.info("ar.result() : {}", ar.result());
+                    List<URLData> urlDataList = ar.result()
+                            .stream()
+                            .map(data -> new URLData(
+                                    data.getString("urlId"),
+                                    data.getString("url"),
+                                    data.getString("user"),
+//                                    Json.decodeValue(data.getJsonObject("info").toBuffer(), Info.class),
+                                    null,
+                                    data.getString("createdOn")
+                            ))
+                            .collect(Collectors.toList());
+
+                    URLData urlData = !urlDataList.isEmpty() ? urlDataList.get(0) : null;
+
+                    resultHandler.handle(Future.succeededFuture(urlData));
+                });
+
+        return this;
     }
 
     @Override

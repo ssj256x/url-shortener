@@ -19,6 +19,7 @@ public class Server extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> promise) {
+        System.setProperty("PORT", String.valueOf(port));
         try {
 
             vertx.createHttpServer()
@@ -46,6 +47,9 @@ public class Server extends AbstractVerticle {
                         .setStatusCode(200)
                         .putHeader(ApiHeaders.CONTENT_TYPE.getValue(), MediaType.TEXT_PLAIN)
                         .end(String.format("Application Started on Port %d", port)));
+
+        router.get("/:id")
+                .handler(requestHandler::handleRedirect);
 
         router.post("/create")
                 .handler(requestHandler::handleCreate);

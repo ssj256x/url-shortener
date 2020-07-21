@@ -33,7 +33,7 @@ public class URLData {
         this.urlId = json.getString("urlId");
         this.user = json.getString("user");
         this.createdOn = json.getString("createdOn");
-        this.info = Json.decodeValue(json.getJsonObject("info").toBuffer(), Info.class);
+        if(info != null) this.info = Json.decodeValue(json.getJsonObject("info").toBuffer(), Info.class);
     }
 
     @Override
