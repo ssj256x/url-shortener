@@ -15,16 +15,17 @@ import javax.ws.rs.core.MediaType;
 @Log4j2
 public class Server extends AbstractVerticle {
 
-    int port = 8090;
+    int port;
 
     @Override
     public void start(Promise<Void> promise) {
+        port = config().getInteger("http.port", 8080);
         System.setProperty("PORT", String.valueOf(port));
         try {
 
             vertx.createHttpServer()
-                    .requestHandler(getRouter());
-//                    .listen(port);
+                    .requestHandler(getRouter())
+                    .listen(port);
 
             promise.complete();
 
