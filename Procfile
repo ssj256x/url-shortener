@@ -1,1 +1,1 @@
-web: java -Dprofiles.active=e1 -jar target/url-urlshortener-1.0-SNAPSHOT.jar
+web: java $JAVA_OPTS -Dhttp.port=$PORT -Dprofiles.active=e1 -jar target/url-urlshortener-1.0-SNAPSHOT.jar
