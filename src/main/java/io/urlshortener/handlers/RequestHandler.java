@@ -115,6 +115,7 @@ public class RequestHandler {
             // TODO : Handle errors in and validate data throughout the app
             // TODO : Check for null pointers
             // TODO : Try to figure out unknown behaviour
+            // TODO : Create a feature branch before continuing
             String redirectURL = res.result().getUrl();
             LOGGER.info("redirectURL : {}", redirectURL);
 

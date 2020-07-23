@@ -1,0 +1,1 @@
+web: java -jar target/url-urlshortener-1.0-SNAPSHOT.jar -Dprofiles.active=e1
