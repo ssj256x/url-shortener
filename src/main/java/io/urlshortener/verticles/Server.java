@@ -23,8 +23,8 @@ public class Server extends AbstractVerticle {
         try {
 
             vertx.createHttpServer()
-                    .requestHandler(getRouter())
-                    .listen(port);
+                    .requestHandler(getRouter());
+//                    .listen(port);
 
             promise.complete();
 
