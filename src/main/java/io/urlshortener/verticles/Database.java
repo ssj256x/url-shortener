@@ -15,9 +15,10 @@ public class Database extends AbstractVerticle {
     public void start() {
         JsonObject dsConfig = config().getJsonObject("datasource");
         JsonObject dbProp = new JsonObject();
-        dbProp.put("host", dsConfig.getValue("host"));
-        dbProp.put("port", dsConfig.getValue("port"));
-        dbProp.put("db_name", dsConfig.getValue("db_name"));
+//        dbProp.put("host", dsConfig.getValue("host"));
+//        dbProp.put("port", dsConfig.getValue("port"));
+//        dbProp.put("db_name", dsConfig.getValue("db_name"));
+        dbProp.put("connection_string", dsConfig.getValue("connection_string"));
         final MongoClient mongoClient = MongoClient.createShared(vertx, dbProp);
         final URLRepository urlRepository = new URLRepositoryImpl(mongoClient);
 

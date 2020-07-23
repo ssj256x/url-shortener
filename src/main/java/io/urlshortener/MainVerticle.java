@@ -55,7 +55,7 @@ public class MainVerticle extends AbstractVerticle {
             config = asyncResult.result();
             LOGGER.info("Configurations read successfully");
 
-//            deployVerticle(Database.class, false);
+            deployVerticle(Database.class, false);
             deployVerticle(Server.class, false);
 
             promise.complete();
