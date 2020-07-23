@@ -19,6 +19,7 @@
         <lombok.version>1.18.12</lombok.version>
         <apache.commons.version>3.11</apache.commons.version>
         <jaxrs.version>2.1.1</jaxrs.version>
+        <vertx.verticle>io.urlshortener.MainVerticle</vertx.verticle>
     </properties>
 
     <dependencyManagement>

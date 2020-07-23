@@ -47,10 +47,13 @@ public class Server extends AbstractVerticle {
                         .setStatusCode(200)
                         .putHeader(ApiHeaders.CONTENT_TYPE.getValue(), MediaType.TEXT_PLAIN)
                         .end(String.format("Application Started on Port %d", port)));
-
+//        router.get("/health")
+//                .handler(ctx -> ctx.response()
+//                        .setStatusCode(200)
+//                        .putHeader(ApiHeaders.CONTENT_TYPE.getValue(), MediaType.TEXT_PLAIN)
+//                        .end("Application is UP!"));
         router.get("/:id")
                 .handler(requestHandler::handleRedirect);
-
         router.post("/create")
                 .handler(requestHandler::handleCreate);
         router.get("/all")

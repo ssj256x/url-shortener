@@ -13,43 +13,21 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This class is the starting point of the application.
- *
- * @deprecated - This class is deprecated, use {@link MainVerticle}
+ * The Main Verticle for the Application
  */
-@Deprecated
 @Log4j2
-public class UrlShortenerApplication {
+public class MainVerticle extends AbstractVerticle {
 
-    private final Configuration configuration;
-    private Vertx vertx;
     private VertxOptions vertxOptions;
     private JsonObject config;
 
-    UrlShortenerApplication() {
-        configuration = new Configuration();
-    }
+    @Override
+    public void start() {
 
-    public static void main(String[] args) {
         LOGGER.info("Starting Application...");
 
-        UrlShortenerApplication application = new UrlShortenerApplication();
-
-        application.start()
-                .onSuccess(handler -> LOGGER.info("Application started on : {}", LocalDateTime.now()))
-                .onFailure(handler -> {
-                    LOGGER.error("Application Startup Failed!");
-                    LOGGER.error(handler.getStackTrace());
-                });
-    }
-
-    /**
-     * Starts the application, initializes configurations and deploys verticles
-     *
-     * @return Future object
-     */
-    public Future<Void> start() {
         Promise<Void> promise = Promise.promise();
+        Configuration configuration = new Configuration();
 
         configuration.initConfig();
 
@@ -77,13 +55,19 @@ public class UrlShortenerApplication {
             config = asyncResult.result();
             LOGGER.info("Configurations read successfully");
 
-            deployVerticle(Database.class, false);
+//            deployVerticle(Database.class, false);
             deployVerticle(Server.class, false);
 
             promise.complete();
         });
 
-        return promise.future();
+        LOGGER.info("Application started on : {}", LocalDateTime.now());
+    }
+
+    @Override
+    public void stop() throws Exception {
+        vertx.close();
+        LOGGER.info("Application Closed");
     }
 
     /**
