@@ -12,14 +12,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <vertx.version>3.9.1</vertx.version>
-        <vertx.maven.plugin.version>1.0.13</vertx.maven.plugin.version>
+        <vmp.version>1.0.13</vmp.version>
         <log4j2.version>2.13.3</log4j2.version>
         <jackson.yml>2.11.1</jackson.yml>
         <junit.version>4.13</junit.version>
         <lombok.version>1.18.12</lombok.version>
         <apache.commons.version>3.11</apache.commons.version>
         <jaxrs.version>2.1.1</jaxrs.version>
-        <vertx.verticle>io.urlshortener.MainVerticle</vertx.verticle>
+        <vertx.verticle>io.urlshortener.WeenyApp</vertx.verticle>
     </properties>
 
     <dependencyManagement>
@@ -68,6 +68,14 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-api-contract</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-api-service</artifactId>
         </dependency>
 
         <!-- Log4j2 dependencies -->
@@ -145,7 +153,7 @@
                     </annotationProcessors>
                     <generatedSourcesDirectory>${project.basedir}/src/main/generated</generatedSourcesDirectory>
                     <compilerArgs>
-                        <arg>-AoutputDirectory=${project.basedir}/src/main</arg>
+                        <arg>-Acodegen.output=${project.basedir}/src/main</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -185,7 +193,7 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>vertx-maven-plugin</artifactId>
-                <version>${vertx.maven.plugin.version}</version>
+                <version>${vmp.version}</version>
                 <executions>
                     <execution>
                         <id>vmp</id>
