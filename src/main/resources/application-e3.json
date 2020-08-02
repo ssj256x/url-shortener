@@ -1,0 +1,16 @@
+
+{
+  "worker-pool-name": "url-shortener-worker-pool",
+  "worker-pool-size": 10,
+  "datasource": {
+    "connection_string": "mongodb+srv://frankie:frankie256x@url-data-cluster.ek9ki.mongodb.net/url-shortener?retryWrites=true&w=majority",
+    "host": "url-data-cluster.ek9ki.mongodb.net/test",
+    "port": 27017,
+    "db_name": "url-shortener-app",
+    "username": "frankie",
+    "password": "frankie256x",
+    "collections": {
+      "url-data": "url-data"
+    }
+  }
+}

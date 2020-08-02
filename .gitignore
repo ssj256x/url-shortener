@@ -2,3 +2,5 @@
 .idea
 target
 .vertx
+src/main/generated
+src/main/asciidoc
