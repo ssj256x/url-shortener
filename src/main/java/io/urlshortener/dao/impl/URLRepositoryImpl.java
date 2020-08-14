@@ -1,17 +1,17 @@
 package io.urlshortener.dao.impl;
 
 import io.urlshortener.dao.URLRepository;
+import io.urlshortener.helper.RepositoryHelper;
 import io.urlshortener.model.URLData;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class URLRepositoryImpl implements URLRepository {
 
     private MongoClient mongoClient;
+    private RepositoryHelper repositoryHelper;
 
     /**
      * Constructor used to initialize a DB Client by connecting with a server
@@ -29,6 +30,8 @@ public class URLRepositoryImpl implements URLRepository {
      * @param config - The configuration object
      */
     public URLRepositoryImpl(Vertx vertx, JsonObject config) {
+
+        // Initialising DB by creating a MongoClient
         vertx.executeBlocking(future -> {
                     LOGGER.info("Initializing DB...");
 
@@ -48,14 +51,23 @@ public class URLRepositoryImpl implements URLRepository {
 
                     try {
                         mongoClient = MongoClient.createShared(vertx, dbProp);
+                        LOGGER.info("mongoClient in constructor : " + mongoClient);
+                        future.complete();
                     } catch (Exception e) {
                         LOGGER.error("Error while init DB");
+                        future.fail(e.getCause());
                     }
                 },
                 ar -> {
-                    if (ar.succeeded()) LOGGER.info("DB Initialized");
-                    else LOGGER.error("Error while init DB : {}", ar.cause().getMessage());
+                    if (ar.succeeded()) {
+                        LOGGER.info("DB Initialized");
+                        // Initializing RepositoryHelper
+                        repositoryHelper = new RepositoryHelper(mongoClient, URLData.DB_COLLECTION);
+                        LOGGER.info("repositoryHelper : " + repositoryHelper);
+                    } else LOGGER.error("Error while init DB : {}", ar.cause().getMessage());
                 });
+
+        LOGGER.info("repositoryHelper : " + repositoryHelper);
     }
 
     @Override
@@ -83,22 +95,18 @@ public class URLRepositoryImpl implements URLRepository {
                 new JsonObject(),
                 ar -> {
                     if (ar.failed()) {
-                        LOGGER.error("Error occurred while fething data");
-                        resultHandler.handle(Future.failedFuture(ar.cause()));
+                        LOGGER.error("Error occurred while fetching data");
                         return;
                     }
-                    // TODO : Try to use reflection to make a generic object mapper
-                    List<URLData> urlDataList = ar.result()
-                            .stream()
-                            .map(data -> new URLData(
-                                    data.getString("urlId"),
-                                    data.getString("url"),
-                                    data.getString("user"),
-                                    data.getString("createdOn")
-                            ))
-                            .collect(Collectors.toList());
+                    List<JsonObject> result = ar.result();
+                    LOGGER.info("result optional : " + result);
 
-                    resultHandler.handle(Future.succeededFuture(urlDataList));
+                    resultHandler.handle(
+                            Future.succeededFuture(
+                                    result
+                                            .stream()
+                                            .map(repositoryHelper::mapToURLData)
+                                            .collect(Collectors.toList())));
                 });
 
         return this;
@@ -107,8 +115,9 @@ public class URLRepositoryImpl implements URLRepository {
     @Override
     public URLRepository findById(String id, Handler<AsyncResult<URLData>> resultHandler) {
 
-        mongoClient.find(URLData.DB_COLLECTION,
+        mongoClient.findOne(URLData.DB_COLLECTION,
                 new JsonObject().put("urlId", id),
+                null,
                 ar -> {
                     if (ar.failed()) {
                         LOGGER.error("Error occurred while fetching data");
@@ -116,21 +125,10 @@ public class URLRepositoryImpl implements URLRepository {
                         return;
                     }
                     LOGGER.info("ar.result() : {}", ar.result());
-                    List<URLData> urlDataList = ar.result()
-                            .stream()
-                            .map(data -> new URLData(
-                                    data.getString("urlId"),
-                                    data.getString("url"),
-                                    data.getString("user"),
-                                    data.getString("createdOn")
-                            ))
-                            .collect(Collectors.toList());
-
-                    URLData urlData = !urlDataList.isEmpty() ? urlDataList.get(0) : null;
+                    URLData urlData = repositoryHelper.mapToURLData(ar.result());
 
                     resultHandler.handle(Future.succeededFuture(urlData));
                 });
-
         return this;
     }
 
@@ -141,6 +139,26 @@ public class URLRepositoryImpl implements URLRepository {
 
     @Override
     public URLRepository findByUser(String user, Handler<AsyncResult<List<URLData>>> resultHandler) {
-        return null;
+
+        resultHandler.handle(
+                Future.succeededFuture(
+                        executeFindMany(new JsonObject().put("user", user))));
+        return this;
+    }
+
+    /**
+     * Executes the find method from {@link RepositoryHelper} and fetches the query.
+     *
+     * @param query - The query to execute
+     * @return The List of {@link URLData}
+     */
+    private List<URLData> executeFindMany(JsonObject query) {
+
+        return repositoryHelper
+                .find(query)
+                .result()
+                .stream()
+                .map(repositoryHelper::mapToURLData)
+                .collect(Collectors.toList());
     }
 }

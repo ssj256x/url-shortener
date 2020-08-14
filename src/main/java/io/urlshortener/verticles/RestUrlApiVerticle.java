@@ -48,8 +48,6 @@ public class RestUrlApiVerticle extends RestApiVerticle {
                 // Mount services on Event Bus based on extensions
                 openAPI3RouterFactory.mountServicesFromExtensions();
 
-                LOGGER.info("openAPI3RouterFactory : {}", openAPI3RouterFactory);
-
                 // Fetching the Router defined in api contract
                 Router router = openAPI3RouterFactory.getRouter();
 

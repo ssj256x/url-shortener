@@ -34,15 +34,20 @@ public class WeenyApp extends BaseMicroserviceVerticle {
     public void start() throws Exception {
         super.start();
 
-        new Configuration(vertx).initConfig()
+        new Configuration(vertx)
+                .initConfig()
                 .compose(c -> {
                     config = c;
+                    return Future.succeededFuture(c);
+                })
+                .compose(c -> {
                     new ServiceBinder(vertx)
                             .setAddress(Address.OPEN_API.value())
-                            .register(URLService.class, URLService.create(vertx, c));
+                            .register(URLService.class, URLService.create(vertx, config));
                     return Future.succeededFuture(c);
                 })
                 .compose(c -> deployRestService());
+
     }
 
     /**
@@ -52,8 +57,7 @@ public class WeenyApp extends BaseMicroserviceVerticle {
      */
     private Future<Void> deployRestService() {
         Promise<Void> promise = Promise.promise();
-        vertx.deployVerticle(new RestUrlApiVerticle(),
-                new DeploymentOptions().setConfig(config));
+        vertx.deployVerticle(new RestUrlApiVerticle(), new DeploymentOptions().setConfig(config));
         return promise.future();
     }
 }

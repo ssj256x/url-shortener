@@ -6,13 +6,13 @@ package io.urlshortener.util;
 public enum Address {
     OPEN_API("weeny-url-shortener.app");
 
-    private String address;
+    private final String addr;
 
-    Address(String address) {
-        this.address = address;
+    Address(String addr) {
+        this.addr = addr;
     }
 
     public String value() {
-        return address;
+        return addr;
     }
 }
