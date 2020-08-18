@@ -9,7 +9,6 @@ import io.vertx.ext.mongo.MongoClient;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Common class to abstract recurring functionalities of CRUD
@@ -50,7 +49,7 @@ public class RepositoryHelper {
                         return;
                     }
                     List<JsonObject> result = ar.result();
-                    LOGGER.info("result optional : " + result);
+                    LOGGER.info("Fetched Collections : " + result);
                     promise.complete(result);
                 });
         return promise.future();
@@ -63,7 +62,6 @@ public class RepositoryHelper {
      * @return The mapped {@link URLData}
      */
     public URLData mapToURLData(JsonObject json) {
-//        if(json == null) return null;
         URLData urlData = new URLData();
         URLDataConverter.fromJson(json, urlData);
         return urlData;

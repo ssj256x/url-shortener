@@ -135,7 +135,7 @@ paths:
               "$ref": "#/components/schemas/URLData"
       responses:
         '200':
-          description: Deleted URLData successfully
+          description: Updated URLData successfully
         '404':
           description: URL ID not found
         '500':

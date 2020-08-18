@@ -3,15 +3,14 @@ package io.urlshortener.dao.impl;
 import io.urlshortener.dao.URLRepository;
 import io.urlshortener.helper.RepositoryHelper;
 import io.urlshortener.model.URLData;
+import io.urlshortener.model.URLDataConverter;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -61,10 +60,11 @@ public class URLRepositoryImpl implements URLRepository {
                 ar -> {
                     if (ar.succeeded()) {
                         LOGGER.info("DB Initialized");
-                        // Initializing RepositoryHelper
                         repositoryHelper = new RepositoryHelper(mongoClient, URLData.DB_COLLECTION);
                         LOGGER.info("repositoryHelper : " + repositoryHelper);
-                    } else LOGGER.error("Error while init DB : {}", ar.cause().getMessage());
+                    } else {
+                        LOGGER.error("Error while init DB : {}", ar.cause().getMessage());
+                    }
                 });
 
         LOGGER.info("repositoryHelper : " + repositoryHelper);
@@ -101,12 +101,12 @@ public class URLRepositoryImpl implements URLRepository {
                     List<JsonObject> result = ar.result();
                     LOGGER.info("result optional : " + result);
 
-                    resultHandler.handle(
-                            Future.succeededFuture(
-                                    result
-                                            .stream()
-                                            .map(repositoryHelper::mapToURLData)
-                                            .collect(Collectors.toList())));
+                    resultHandler.handle(Future.succeededFuture(
+                            result.stream()
+                                    .map(repositoryHelper::mapToURLData)
+                                    .collect(Collectors.toList())
+                            )
+                    );
                 });
 
         return this;
@@ -124,8 +124,8 @@ public class URLRepositoryImpl implements URLRepository {
                         resultHandler.handle(Future.failedFuture(ar.cause()));
                         return;
                     }
-                    LOGGER.info("ar.result() : {}", ar.result());
-                    URLData urlData = repositoryHelper.mapToURLData(ar.result());
+                    LOGGER.info("Fetched Collection : {}", ar.result());
+                    URLData urlData = ar.result() != null ? repositoryHelper.mapToURLData(ar.result()) : null;
 
                     resultHandler.handle(Future.succeededFuture(urlData));
                 });
@@ -140,9 +140,49 @@ public class URLRepositoryImpl implements URLRepository {
     @Override
     public URLRepository findByUser(String user, Handler<AsyncResult<List<URLData>>> resultHandler) {
 
-        resultHandler.handle(
-                Future.succeededFuture(
-                        executeFindMany(new JsonObject().put("user", user))));
+        return this;
+    }
+
+    @Override
+    public URLRepository delete(String id, Handler<AsyncResult<URLData>> resultHandler) {
+
+        mongoClient.findOneAndDelete(URLData.DB_COLLECTION,
+                new JsonObject().put("id", id),
+                ar -> {
+                    if (ar.failed()) {
+                        LOGGER.error("Error occurred while deleting data");
+                        resultHandler.handle(Future.failedFuture(ar.cause()));
+                        return;
+                    }
+
+                    LOGGER.info("Deleted Result : {}", ar.result());
+                    URLData urlData = ar.result() != null ? repositoryHelper.mapToURLData(ar.result()) : null;
+                    resultHandler.handle(Future.succeededFuture(urlData));
+                });
+
+        return this;
+    }
+
+    @Override
+    public URLRepository update(URLData body, Handler<AsyncResult<URLData>> resultHandler) {
+
+        JsonObject updatedURLData = new JsonObject();
+        URLDataConverter.toJson(body, updatedURLData);
+
+        mongoClient.findOneAndUpdate(URLData.DB_COLLECTION,
+                new JsonObject().put("urlId", body.getUrlId()),
+                updatedURLData,
+                ar -> {
+                    if (ar.failed()) {
+                        LOGGER.error("Error occurred while updating data");
+                        resultHandler.handle(Future.failedFuture(ar.cause()));
+                        return;
+                    }
+
+                    LOGGER.info("ar.result() : {}", ar.result());
+                    resultHandler.handle(Future.succeededFuture(repositoryHelper.mapToURLData(ar.result())));
+                });
+
         return this;
     }
 
@@ -152,13 +192,27 @@ public class URLRepositoryImpl implements URLRepository {
      * @param query - The query to execute
      * @return The List of {@link URLData}
      */
-    private List<URLData> executeFindMany(JsonObject query) {
+    private Future<List<URLData>> executeFindMany(JsonObject query) {
 
-        return repositoryHelper
-                .find(query)
-                .result()
-                .stream()
-                .map(repositoryHelper::mapToURLData)
-                .collect(Collectors.toList());
+        Promise<List<URLData>> promise = Promise.promise();
+
+//        .stream()
+//                .map(repositoryHelper::mapToURLData)
+//                .collect(Collectors.toList()))
+
+//        return repositoryHelper
+//                .find(query)
+//                .onSuccess(list -> {
+//                    Future.succeededFuture(
+//                            list.stream()
+//                                    .map(obj -> {
+//                                        URLData urlData = new URLData();
+//                                        URLDataConverter.fromJson(obj, urlData);
+//                                        return urlData;
+//                                    })
+//                                    .collect(Collectors.toList()));
+//                })
+//                .onFailure(ar -> Future.failedFuture(ar.getCause()));
+        return promise.future();
     }
 }

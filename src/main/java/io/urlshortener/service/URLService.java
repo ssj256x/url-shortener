@@ -69,7 +69,7 @@ public interface URLService {
      * @param context       - Operation Context as part of WebServiceGen
      * @param resultHandler - ResultHandler as part of WebServiceGen
      */
-    void deleteURLData(String urlId,
+    void deleteURLData(String id,
                        OperationRequest context,
                        Handler<AsyncResult<OperationResponse>> resultHandler);
 
@@ -80,7 +80,7 @@ public interface URLService {
      * @param context       - Operation Context as part of WebServiceGen
      * @param resultHandler - ResultHandler as part of WebServiceGen
      */
-    void updateURLData(String urlId,
+    void updateURLData(URLData body,
                        OperationRequest context,
                        Handler<AsyncResult<OperationResponse>> resultHandler);
 }
