@@ -1,7 +1,7 @@
 {
   "worker-pool-name": "url-shortener-worker-pool",
   "worker-pool-size": 10,
-  "open-api-spec": "/openapi.json",
+  "open-api-spec": "/openapi.yaml",
   "datasource": {
     "host": "localhost",
     "port": 27017,
@@ -9,5 +9,7 @@
     "collections": {
       "url-data": "url-data"
     }
-  }
+  },
+  "http.port": 8080,
+  "http.address": "127.0.0.1"
 }

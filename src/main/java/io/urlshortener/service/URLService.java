@@ -11,7 +11,7 @@ import io.vertx.ext.web.api.OperationResponse;
 import io.vertx.ext.web.api.generator.WebApiServiceGen;
 
 /**
- * The service class that interfaces with the openapi.json functions. The proxy for this class is auto generated
+ * The service class that interfaces with the openapi.yml functions. The proxy for this class is auto generated
  */
 @WebApiServiceGen
 public interface URLService {

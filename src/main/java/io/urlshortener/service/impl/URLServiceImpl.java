@@ -3,8 +3,8 @@ package io.urlshortener.service.impl;
 import io.urlshortener.dao.URLRepository;
 import io.urlshortener.model.URLData;
 import io.urlshortener.service.URLService;
-import io.urlshortener.util.RandomStringGenerator;
-import io.urlshortener.util.ResponseHelper;
+import io.urlshortener.helper.RandomStringGenerator;
+import io.urlshortener.helper.ResponseHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -15,7 +15,6 @@ import io.vertx.ext.web.api.OperationResponse;
 import lombok.extern.log4j.Log4j2;
 
 import java.sql.Timestamp;
-import java.util.stream.Collectors;
 
 @Log4j2
 public class URLServiceImpl implements URLService {
@@ -38,6 +37,9 @@ public class URLServiceImpl implements URLService {
 
         LOGGER.info("Inside createURL");
 
+        //TODO : Validate incoming request for URL Body
+        //TODO : Use a Key Generation Service to generate keys
+
         body.setUrlId(randomStringGenerator.generateAlphaNumericString(RAND_STR_LEN));
         body.setCreatedOn(new Timestamp(System.currentTimeMillis()).toString());
 
@@ -45,8 +47,9 @@ public class URLServiceImpl implements URLService {
 
         urlRepository.save(body, ar -> {
             if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-                LOGGER.error("Error while fetching data");
+                responseHelper.handleInternalServerError(ar.cause(),
+                        "Error occurred while creating URL data",
+                        resultHandler);
                 return;
             }
             LOGGER.info("Response after saving : {}", ar.result());
@@ -58,18 +61,15 @@ public class URLServiceImpl implements URLService {
     public void getAllURLs(OperationRequest context,
                            Handler<AsyncResult<OperationResponse>> resultHandler) {
         LOGGER.info("Inside getAllURLs");
+
         urlRepository.findAll(ar -> {
             if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-                LOGGER.error("Error while fetching data");
+                responseHelper.handleInternalServerError(ar.cause(),
+                        "Error occurred while fetching URLs",
+                        resultHandler);
                 return;
             }
-            resultHandler.handle(
-                    Future.succeededFuture(
-                            responseHelper.ok(ar
-                                    .result()
-                                    .stream()
-                                    .map(URLData::toJson).collect(Collectors.toList()))));
+            responseHelper.handleListResponse(ar.result(), resultHandler);
         });
     }
 
@@ -77,14 +77,16 @@ public class URLServiceImpl implements URLService {
     public void redirectToURL(String id,
                               OperationRequest context,
                               Handler<AsyncResult<OperationResponse>> resultHandler) {
+
         LOGGER.info("Inside redirectToURL with id : {}", id);
 
-        if(responseHelper.urlIdEmptyResponse(id, resultHandler)) return;
+        if (responseHelper.handleIfUrlEmpty(id, resultHandler)) return;
 
         urlRepository.findById(id, ar -> {
             if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-                LOGGER.error("Error while fetching data");
+                responseHelper.handleInternalServerError(ar.cause(),
+                        "Error occurred while creating URL",
+                        resultHandler);
                 return;
             }
             resultHandler.handle(Future.succeededFuture(responseHelper.redirectToUrlResponse(ar.result())));
@@ -98,12 +100,13 @@ public class URLServiceImpl implements URLService {
 
         LOGGER.info("Inside getUrlById for ID : {}", id);
 
-        if(responseHelper.urlIdEmptyResponse(id, resultHandler)) return;
+        if (responseHelper.handleIfUrlEmpty(id, resultHandler)) return;
 
         urlRepository.findById(id, ar -> {
             if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-                LOGGER.error("Error while fetching data");
+                responseHelper.handleInternalServerError(ar.cause(),
+                        "Error while fetching URL data",
+                        resultHandler);
                 return;
             }
             resultHandler.handle(Future.succeededFuture(responseHelper.fetchUrlResponse(ar.result())));
@@ -118,13 +121,14 @@ public class URLServiceImpl implements URLService {
 
         LOGGER.info("Inside deleteURLData for id : {}", id);
 
-        if(responseHelper.urlIdEmptyResponse(id, resultHandler)) return;
+        if (responseHelper.handleIfUrlEmpty(id, resultHandler)) return;
 
         urlRepository.delete(id, ar -> {
 
             if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-                LOGGER.error("Error while fetching data");
+                responseHelper.handleInternalServerError(ar.cause(),
+                        "Error while deleting URL data",
+                        resultHandler);
                 return;
             }
 
@@ -139,10 +143,13 @@ public class URLServiceImpl implements URLService {
 
         LOGGER.info("Inside updateURLData for body : {}", body);
 
+        //TODO : map from body param to new URLData obj and perform update
+
         urlRepository.update(body, ar -> {
             if (ar.failed()) {
-                resultHandler.handle(Future.failedFuture(ar.cause()));
-                LOGGER.error("Error while fetching data");
+                responseHelper.handleInternalServerError(ar.cause(),
+                        "Error while updating URL data",
+                        resultHandler);
                 return;
             }
 

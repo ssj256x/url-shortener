@@ -99,7 +99,7 @@ public class URLRepositoryImpl implements URLRepository {
                         return;
                     }
                     List<JsonObject> result = ar.result();
-                    LOGGER.info("result optional : " + result);
+                    LOGGER.info("Fetched result : " + result);
 
                     resultHandler.handle(Future.succeededFuture(
                             result.stream()

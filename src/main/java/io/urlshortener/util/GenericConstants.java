@@ -9,10 +9,10 @@ public enum GenericConstants {
     LOGGER_DELEGATE_FACTORY("vertx.logger-delegate-factory-class-name"),
     LOG4J2_LOG_FACTORY("io.vertx.core.logging.Log4j2LogDelegateFactory"),
     VERTX_CONFIG_PATH("vertx-config-path"),
-    HTTP_PORT("http.port");
+    HTTP_PORT("http.port"),
+    HTTP_ADDRESS("http.address");
 
-
-    String value;
+    private final String value;
     GenericConstants(String value) {
         this.value = value;
     }

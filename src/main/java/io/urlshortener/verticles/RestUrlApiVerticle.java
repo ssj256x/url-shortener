@@ -8,7 +8,7 @@ import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
 import lombok.extern.log4j.Log4j2;
 
 /**
- * Verticle to start the Http Server and implement routing from openapi.json file
+ * Verticle to start the Http Server and implement routing from openapi.yml file
  */
 @Log4j2
 public class RestUrlApiVerticle extends RestApiVerticle {
@@ -22,7 +22,7 @@ public class RestUrlApiVerticle extends RestApiVerticle {
     }
 
     /**
-     * Starts the Http Server and loads the routing and handling properties from openapi.json
+     * Starts the Http Server and loads the routing and handling properties from openapi.yml
      *
      * @return Future object
      */
@@ -34,7 +34,7 @@ public class RestUrlApiVerticle extends RestApiVerticle {
         String openApiSpec = config().getString("open-api-spec");
         LOGGER.info("Creating endpoints from Api Spec : {}", openApiSpec);
 
-        OpenAPI3RouterFactory.create(this.vertx, openApiSpec, ar -> {
+        OpenAPI3RouterFactory.create(vertx, openApiSpec, ar -> {
 
             if (ar.failed()) {
                 LOGGER.error("Error while reading from API-Spec. {}", ar.cause().getMessage());
@@ -52,7 +52,7 @@ public class RestUrlApiVerticle extends RestApiVerticle {
                 Router router = openAPI3RouterFactory.getRouter();
 
                 port = config().getInteger(GenericConstants.HTTP_PORT.getValue(), 8080);
-                host = config().getString("order.http.address", "127.0.0.1");
+                host = config().getString(GenericConstants.HTTP_ADDRESS.getValue(), "127.0.0.1");
 
                 createHttpServer(router, host, port);
 

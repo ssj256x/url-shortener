@@ -1,4 +1,4 @@
-package io.urlshortener.util;
+package io.urlshortener.helper;
 
 import io.urlshortener.model.ErrorResponse;
 import io.urlshortener.model.URLData;
@@ -6,18 +6,23 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.OperationResponse;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import static javax.ws.rs.core.MediaType.*;
 import static javax.ws.rs.core.Response.Status.*;
+import static javax.ws.rs.core.HttpHeaders.*;
 
 /**
  * This class helps generate the {@link OperationResponse} object for multiple response types
  */
+@Log4j2
 public class ResponseHelper {
 
     /**
@@ -39,7 +44,26 @@ public class ResponseHelper {
                 notFound("URLNTFND", "URL Not Found");
     }
 
-    public boolean urlIdEmptyResponse(String urlId, Handler<AsyncResult<OperationResponse>> resultHandler) {
+    public void handleListResponse(List<URLData> urlDataList,
+                                   Handler<AsyncResult<OperationResponse>> resultHandler) {
+
+        List<JsonObject> jsonObjectList = new ArrayList<>();
+
+        if (urlDataList != null) {
+            jsonObjectList = urlDataList
+                    .stream()
+                    .map(URLData::toJson)
+                    .collect(Collectors.toList());
+        }
+
+        resultHandler.handle(
+                Future.succeededFuture(
+                        ok(jsonObjectList)));
+    }
+
+    public boolean handleIfUrlEmpty(String urlId,
+                                    Handler<AsyncResult<OperationResponse>> resultHandler) {
+
         if (urlId == null || StringUtils.isBlank(urlId)) {
             resultHandler.handle(
                     Future.succeededFuture(
@@ -49,6 +73,14 @@ public class ResponseHelper {
         return false;
     }
 
+    public void handleInternalServerError(Throwable t,
+                                          String msg,
+                                          Handler<AsyncResult<OperationResponse>> resultHandler) {
+
+        LOGGER.error(msg);
+        LOGGER.error(t.getStackTrace(), t);
+        resultHandler.handle(Future.succeededFuture(internalError(null, msg)));
+    }
 
 
     /**
@@ -60,19 +92,20 @@ public class ResponseHelper {
     public OperationResponse ok(Object response) {
         return new OperationResponse()
                 .setStatusCode(OK.getStatusCode())
-                .putHeader("Content-Type", MediaType.APPLICATION_JSON)
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setPayload(Buffer.buffer(response.toString()));
     }
 
     /**
      * Generates a 201 {@link OperationResponse} object
+     *
      * @param response - The JSON object to be enriched in the response
      * @return The OperationResponse object
      */
     public OperationResponse created(Object response) {
         return new OperationResponse()
                 .setStatusCode(OK.getStatusCode())
-                .putHeader("Content-Type", MediaType.APPLICATION_JSON)
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setPayload(Buffer.buffer(response.toString()));
     }
 
@@ -169,7 +202,7 @@ public class ResponseHelper {
 
         return new OperationResponse()
                 .setStatusCode(httpCode)
-                .setHeaders(new VertxHttpHeaders().add("Content-Type", MediaType.APPLICATION_JSON))
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setPayload(response);
     }
 
