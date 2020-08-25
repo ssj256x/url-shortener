@@ -8,7 +8,6 @@ import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,55 +18,17 @@ import java.util.stream.Collectors;
 @Log4j2
 public class URLRepositoryImpl implements URLRepository {
 
-    private MongoClient mongoClient;
-    private RepositoryHelper repositoryHelper;
+    private final MongoClient mongoClient;
+    private final RepositoryHelper repositoryHelper;
 
     /**
      * Constructor used to initialize a DB Client by connecting with a server
      *
-     * @param vertx  - The vertx instance
-     * @param config - The configuration object
+     * @param mongoClient  - MongoDB client to query DB
      */
-    public URLRepositoryImpl(Vertx vertx, JsonObject config) {
-
-        // Initialising DB by creating a MongoClient
-        vertx.executeBlocking(future -> {
-                    LOGGER.info("Initializing DB...");
-
-                    JsonObject dsConfig = config.getJsonObject("datasource");
-                    JsonObject dbProp = new JsonObject();
-                    String mdbConnStr = dsConfig.getString("connection_string");
-
-                    if (StringUtils.isBlank(mdbConnStr)) {
-                        dbProp.put("host", dsConfig.getValue("host"));
-                        dbProp.put("port", dsConfig.getValue("port"));
-                        dbProp.put("db_name", dsConfig.getValue("db_name"));
-                    } else {
-                        dbProp.put("connection_string", mdbConnStr);
-                    }
-
-                    LOGGER.debug("Loaded DB Properties : {}", dbProp);
-
-                    try {
-                        mongoClient = MongoClient.createShared(vertx, dbProp);
-                        LOGGER.info("mongoClient in constructor : " + mongoClient);
-                        future.complete();
-                    } catch (Exception e) {
-                        LOGGER.error("Error while init DB");
-                        future.fail(e.getCause());
-                    }
-                },
-                ar -> {
-                    if (ar.succeeded()) {
-                        LOGGER.info("DB Initialized");
-                        repositoryHelper = new RepositoryHelper(mongoClient, URLData.DB_COLLECTION);
-                        LOGGER.info("repositoryHelper : " + repositoryHelper);
-                    } else {
-                        LOGGER.error("Error while init DB : {}", ar.cause().getMessage());
-                    }
-                });
-
-        LOGGER.info("repositoryHelper : " + repositoryHelper);
+    public URLRepositoryImpl(MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
+        repositoryHelper = new RepositoryHelper(mongoClient, URLData.DB_COLLECTION);
     }
 
     @Override
@@ -184,35 +145,5 @@ public class URLRepositoryImpl implements URLRepository {
                 });
 
         return this;
-    }
-
-    /**
-     * Executes the find method from {@link RepositoryHelper} and fetches the query.
-     *
-     * @param query - The query to execute
-     * @return The List of {@link URLData}
-     */
-    private Future<List<URLData>> executeFindMany(JsonObject query) {
-
-        Promise<List<URLData>> promise = Promise.promise();
-
-//        .stream()
-//                .map(repositoryHelper::mapToURLData)
-//                .collect(Collectors.toList()))
-
-//        return repositoryHelper
-//                .find(query)
-//                .onSuccess(list -> {
-//                    Future.succeededFuture(
-//                            list.stream()
-//                                    .map(obj -> {
-//                                        URLData urlData = new URLData();
-//                                        URLDataConverter.fromJson(obj, urlData);
-//                                        return urlData;
-//                                    })
-//                                    .collect(Collectors.toList()));
-//                })
-//                .onFailure(ar -> Future.failedFuture(ar.getCause()));
-        return promise.future();
     }
 }

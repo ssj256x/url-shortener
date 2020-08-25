@@ -5,6 +5,7 @@ import io.urlshortener.util.Address;
 import io.urlshortener.util.Configuration;
 import io.urlshortener.verticles.BaseMicroserviceVerticle;
 import io.urlshortener.verticles.RestUrlApiVerticle;
+import io.urlshortener.verticles.URLRepositoryVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -40,10 +41,12 @@ public class WeenyApp extends BaseMicroserviceVerticle {
                     config = c;
                     return Future.succeededFuture(c);
                 })
+                .compose(c ->  {
+                    deployURLRepositoryService();
+                    return Future.succeededFuture(c);
+                })
                 .compose(c -> {
-                    new ServiceBinder(vertx)
-                            .setAddress(Address.OPEN_API.value())
-                            .register(URLService.class, URLService.create(vertx, config));
+                    registerURLService();
                     return Future.succeededFuture(c);
                 })
                 .compose(c -> deployRestService());
@@ -56,8 +59,24 @@ public class WeenyApp extends BaseMicroserviceVerticle {
      * @return Future wrapped object
      */
     private Future<Void> deployRestService() {
+        LOGGER.info("Inside deployRestService");
         Promise<Void> promise = Promise.promise();
         vertx.deployVerticle(new RestUrlApiVerticle(), new DeploymentOptions().setConfig(config));
+        return promise.future();
+    }
+
+    private Future<Void> deployURLRepositoryService() {
+        LOGGER.info("Inside deployURLRepositoryService");
+        Promise<Void> promise = Promise.promise();
+        vertx.deployVerticle(new URLRepositoryVerticle(), new DeploymentOptions().setConfig(config));
+        return promise.future();
+    }
+
+    private Future<Void> registerURLService() {
+        Promise<Void> promise = Promise.promise();
+        new ServiceBinder(vertx)
+                .setAddress(Address.OPEN_API.value())
+                .register(URLService.class, URLService.create(vertx, config));
         return promise.future();
     }
 }

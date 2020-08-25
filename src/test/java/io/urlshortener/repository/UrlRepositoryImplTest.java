@@ -2,6 +2,7 @@ package io.urlshortener.repository;
 
 import io.urlshortener.dao.URLRepository;
 import io.urlshortener.model.URLData;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -31,7 +32,7 @@ public class UrlRepositoryImplTest {
                 .put("db_name", "url-shortener-app");
 
         Async async = context.async();
-        urlRepository = URLRepository.create(vertx, new JsonObject().put("datasource", config));
+//        urlRepository = URLRepository.create(vertx, new JsonObject().put("datasource", config), AsyncResult::succeeded);
         vertx.setTimer(1000, id -> async.complete());
     }
 

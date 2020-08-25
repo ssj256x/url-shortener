@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 
 import java.util.List;
 
@@ -18,6 +19,9 @@ import java.util.List;
 @ProxyGen
 @VertxGen
 public interface URLRepository {
+
+    String SERVICE_ADDRESS = "url-repository.service";
+
     /**
      * Save a single {@link URLData}
      *
@@ -91,7 +95,7 @@ public interface URLRepository {
         return new URLRepositoryVertxEBProxy(vertx, address);
     }
 
-    static URLRepository create(Vertx vertx, JsonObject config) {
-        return new URLRepositoryImpl(vertx, config);
+    static URLRepository create(MongoClient mongoClient) {
+        return new URLRepositoryImpl(mongoClient);
     }
 }

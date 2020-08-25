@@ -25,7 +25,7 @@ public class URLServiceImpl implements URLService {
     private static final Integer RAND_STR_LEN = 7;
 
     public URLServiceImpl(Vertx vertx, JsonObject config) {
-        urlRepository = URLRepository.create(vertx, config);
+        urlRepository = URLRepository.createProxy(vertx, URLRepository.SERVICE_ADDRESS);
         responseHelper = new ResponseHelper();
         randomStringGenerator = new RandomStringGenerator();
     }
