@@ -41,7 +41,7 @@ public class WeenyApp extends BaseMicroserviceVerticle {
                     config = c;
                     return Future.succeededFuture(c);
                 })
-                .compose(c ->  {
+                .compose(c -> {
                     deployURLRepositoryService();
                     return Future.succeededFuture(c);
                 })
@@ -50,7 +50,6 @@ public class WeenyApp extends BaseMicroserviceVerticle {
                     return Future.succeededFuture(c);
                 })
                 .compose(c -> deployRestService());
-
     }
 
     /**
@@ -65,6 +64,11 @@ public class WeenyApp extends BaseMicroserviceVerticle {
         return promise.future();
     }
 
+    /**
+     * Deploys the {@link URLRepositoryVerticle}
+     *
+     * @return Future wrapped object
+     */
     private Future<Void> deployURLRepositoryService() {
         LOGGER.info("Inside deployURLRepositoryService");
         Promise<Void> promise = Promise.promise();
@@ -72,11 +76,16 @@ public class WeenyApp extends BaseMicroserviceVerticle {
         return promise.future();
     }
 
+    /**
+     * Registers the {@link URLService} for handling HTTP requests
+     *
+     * @return Future wrapped object
+     */
     private Future<Void> registerURLService() {
         Promise<Void> promise = Promise.promise();
         new ServiceBinder(vertx)
                 .setAddress(Address.OPEN_API.value())
-                .register(URLService.class, URLService.create(vertx, config));
+                .register(URLService.class, URLService.create(vertx));
         return promise.future();
     }
 }

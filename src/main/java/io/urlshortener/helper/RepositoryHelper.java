@@ -2,13 +2,16 @@ package io.urlshortener.helper;
 
 import io.urlshortener.model.URLData;
 import io.urlshortener.model.URLDataConverter;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Common class to abstract recurring functionalities of CRUD
@@ -36,24 +39,31 @@ public class RepositoryHelper {
      * @param query - The query to execute
      * @return Collection of fetched elements
      */
-    public Future<List<JsonObject>> find(JsonObject query) {
+    public Future<List<JsonObject>> findMultiple(JsonObject query,
+                                                 Handler<AsyncResult<List<URLData>>> resultHandler) {
 
         Promise<List<JsonObject>> promise = Promise.promise();
 
-        mongoClient.find(dbCollection,
-                query,
-                ar -> {
-                    if (ar.failed()) {
-                        LOGGER.error("Error occurred while fetching data");
-                        promise.fail(ar.cause());
-                        return;
-                    }
-                    List<JsonObject> result = ar.result();
-                    LOGGER.info("Fetched Collections : " + result);
-                    promise.complete(result);
-                });
+        mongoClient.find(dbCollection, query, ar -> {
+            if (ar.failed()) {
+                LOGGER.error("Error occurred while fetching data");
+                promise.fail(ar.cause());
+                return;
+            }
+            List<JsonObject> result = ar.result();
+            LOGGER.debug("Fetched Collections : " + result);
+
+            resultHandler.handle(Future.succeededFuture(
+                    result.stream()
+                            .map(this::mapToURLData)
+                            .collect(Collectors.toList())
+                    )
+            );
+            promise.complete(result);
+        });
         return promise.future();
     }
+
 
     /**
      * Maps the {@link JsonObject} fetched to {@link URLData}

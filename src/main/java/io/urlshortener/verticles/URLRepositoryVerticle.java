@@ -9,6 +9,9 @@ import io.vertx.serviceproxy.ServiceBinder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Verticle to connect to DB
+ */
 @Log4j2
 public class URLRepositoryVerticle extends AbstractVerticle {
 

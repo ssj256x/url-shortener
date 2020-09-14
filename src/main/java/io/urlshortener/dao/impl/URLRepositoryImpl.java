@@ -10,7 +10,6 @@ import io.vertx.ext.mongo.MongoClient;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation class for {@link URLRepository} interface
@@ -34,6 +33,7 @@ public class URLRepositoryImpl implements URLRepository {
     @Override
     public URLRepository save(URLData urlData, Handler<AsyncResult<String>> resultHandler) {
 
+        LOGGER.info("Inserting Collection : {}", urlData.toJson().encodePrettily());
         mongoClient.save(URLData.DB_COLLECTION,
                 urlData.toJson(),
                 ar -> {
@@ -52,24 +52,7 @@ public class URLRepositoryImpl implements URLRepository {
     @Override
     public URLRepository findAll(Handler<AsyncResult<List<URLData>>> resultHandler) {
 
-        mongoClient.find(URLData.DB_COLLECTION,
-                new JsonObject(),
-                ar -> {
-                    if (ar.failed()) {
-                        LOGGER.error("Error occurred while fetching data");
-                        return;
-                    }
-                    List<JsonObject> result = ar.result();
-                    LOGGER.info("Fetched result : " + result);
-
-                    resultHandler.handle(Future.succeededFuture(
-                            result.stream()
-                                    .map(repositoryHelper::mapToURLData)
-                                    .collect(Collectors.toList())
-                            )
-                    );
-                });
-
+        repositoryHelper.findMultiple(new JsonObject(), resultHandler);
         return this;
     }
 
@@ -95,12 +78,15 @@ public class URLRepositoryImpl implements URLRepository {
 
     @Override
     public URLRepository findByURL(String url, Handler<AsyncResult<List<URLData>>> resultHandler) {
-        return null;
+
+        repositoryHelper.findMultiple(new JsonObject().put("url", url), resultHandler);
+        return this;
     }
 
     @Override
     public URLRepository findByUser(String user, Handler<AsyncResult<List<URLData>>> resultHandler) {
 
+        repositoryHelper.findMultiple(new JsonObject().put("user", user), resultHandler);
         return this;
     }
 
@@ -108,7 +94,7 @@ public class URLRepositoryImpl implements URLRepository {
     public URLRepository delete(String id, Handler<AsyncResult<URLData>> resultHandler) {
 
         mongoClient.findOneAndDelete(URLData.DB_COLLECTION,
-                new JsonObject().put("id", id),
+                new JsonObject().put("urlId", id),
                 ar -> {
                     if (ar.failed()) {
                         LOGGER.error("Error occurred while deleting data");
@@ -129,13 +115,15 @@ public class URLRepositoryImpl implements URLRepository {
 
         JsonObject updatedURLData = new JsonObject();
         URLDataConverter.toJson(body, updatedURLData);
+        LOGGER.info("updatedURLData : {}", updatedURLData.encodePrettily());
 
         mongoClient.findOneAndUpdate(URLData.DB_COLLECTION,
                 new JsonObject().put("urlId", body.getUrlId()),
-                updatedURLData,
+                new JsonObject().put("$set", updatedURLData),
                 ar -> {
                     if (ar.failed()) {
                         LOGGER.error("Error occurred while updating data");
+                        LOGGER.error(ar.cause().getStackTrace(), ar.cause());
                         resultHandler.handle(Future.failedFuture(ar.cause()));
                         return;
                     }

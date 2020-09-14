@@ -26,8 +26,8 @@ import static javax.ws.rs.core.HttpHeaders.*;
 public class ResponseHelper {
 
     /**
-     * Generates the {@link OperationResponse} for fetching a URL. It returns both Successfull and Error
-     * respnses.
+     * Generates the {@link OperationResponse} for fetching a URL. It returns both Successful and Error
+     * responses.
      *
      * @param urlData - The response object
      * @return Generated response
@@ -38,12 +38,24 @@ public class ResponseHelper {
                 notFound("URLNTFND", "URL Not Found");
     }
 
+    /**
+     * Generates the {@link OperationResponse} for redirecting to the fetched URL. It returns both Successful
+     * and Error responses.
+     *
+     * @param urlData - The response object
+     * @return Generated response
+     */
     public OperationResponse redirectToUrlResponse(URLData urlData) {
         return urlData != null ?
                 redirect(urlData.getUrl()) :
                 notFound("URLNTFND", "URL Not Found");
     }
 
+    /**
+     * Generates the {@link OperationResponse} fetched lists of {@link URLData}.
+     *
+     * @param urlDataList - The response object
+     */
     public void handleListResponse(List<URLData> urlDataList,
                                    Handler<AsyncResult<OperationResponse>> resultHandler) {
 
@@ -61,6 +73,13 @@ public class ResponseHelper {
                         ok(jsonObjectList)));
     }
 
+    /**
+     * Generates the failed future if passed URL ID doesn't exist
+     *
+     * @param urlId         - URL ID to check
+     * @param resultHandler - The result handler
+     * @return true or false based on result
+     */
     public boolean handleIfUrlEmpty(String urlId,
                                     Handler<AsyncResult<OperationResponse>> resultHandler) {
 
@@ -73,6 +92,13 @@ public class ResponseHelper {
         return false;
     }
 
+    /**
+     * Generates a 500 {@link OperationResponse} object
+     *
+     * @param t             - The error object
+     * @param msg           - The message to be used
+     * @param resultHandler - The result handler
+     */
     public void handleInternalServerError(Throwable t,
                                           String msg,
                                           Handler<AsyncResult<OperationResponse>> resultHandler) {

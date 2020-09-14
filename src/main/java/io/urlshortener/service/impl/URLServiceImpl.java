@@ -9,7 +9,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.OperationRequest;
 import io.vertx.ext.web.api.OperationResponse;
 import lombok.extern.log4j.Log4j2;
@@ -24,7 +23,7 @@ public class URLServiceImpl implements URLService {
     private final RandomStringGenerator randomStringGenerator;
     private static final Integer RAND_STR_LEN = 7;
 
-    public URLServiceImpl(Vertx vertx, JsonObject config) {
+    public URLServiceImpl(Vertx vertx) {
         urlRepository = URLRepository.createProxy(vertx, URLRepository.SERVICE_ADDRESS);
         responseHelper = new ResponseHelper();
         randomStringGenerator = new RandomStringGenerator();
@@ -57,6 +56,7 @@ public class URLServiceImpl implements URLService {
         });
     }
 
+    // TODO : This function is only kept for testing. Will be removed in final release version of application
     @Override
     public void getAllURLs(OperationRequest context,
                            Handler<AsyncResult<OperationResponse>> resultHandler) {

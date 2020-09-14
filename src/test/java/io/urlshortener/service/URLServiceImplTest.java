@@ -15,16 +15,13 @@ import io.vertx.ext.web.client.WebClient;
 import lombok.extern.log4j.Log4j2;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
 import java.io.IOException;
 
+// TODO : Learn how to use mockito and power mock and write tests
+
 @Log4j2
-@RunWith(PowerMockRunner.class)
-@PowerMockRunnerDelegate(VertxUnitRunner.class)
-@PrepareForTest(URLRepository.class)
+@RunWith(VertxUnitRunner.class)
 public class URLServiceImplTest {
 
     private Vertx vertx;
@@ -35,9 +32,6 @@ public class URLServiceImplTest {
     @Before
     public void setUp(TestContext context) throws IOException {
         vertx = Vertx.vertx();
-
-
-
 
         DeploymentOptions options = new DeploymentOptions()
                 .setConfig(new JsonObject()
@@ -71,7 +65,6 @@ public class URLServiceImplTest {
                         async.complete();
                     });
                 });
-
 
         async.awaitSuccess();
     }
