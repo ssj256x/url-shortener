@@ -8,22 +8,18 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 
 import java.util.List;
 
 /**
  * URL Repository service interface
- * TODO : More DB interacting methods to be added
  */
 @ProxyGen
 @VertxGen
 public interface URLRepository {
 
-    /**
-     * Service address placeholder
-     */
-    String SERVICE_ADDRESS = "url-repository-service";
+    String SERVICE_ADDRESS = "url-repository.service";
 
     /**
      * Save a single {@link URLData}
@@ -74,11 +70,31 @@ public interface URLRepository {
     @Fluent
     URLRepository findByUser(String user, Handler<AsyncResult<List<URLData>>> resultHandler);
 
+    /**
+     * Delete the URLs for the passed UrlId
+     *
+     * @param urlId         - The url id to be deleted
+     * @param resultHandler - Result handler as part of ProxyGen
+     * @return Same class instance
+     */
+    @Fluent
+    URLRepository delete(String urlId, Handler<AsyncResult<URLData>> resultHandler);
+
+    /**
+     * Delete the URLs for the passed UrlId
+     *
+     * @param body          - The url id to be updated
+     * @param resultHandler - Result handler as part of ProxyGen
+     * @return Same class instance
+     */
+    @Fluent
+    URLRepository update(URLData body, Handler<AsyncResult<URLData>> resultHandler);
+
     static URLRepository createProxy(Vertx vertx, String address) {
         return new URLRepositoryVertxEBProxy(vertx, address);
     }
 
-    static URLRepository create(Vertx vertx, JsonObject config) {
-        return new URLRepositoryImpl(vertx, config);
+    static URLRepository create(MongoClient mongoClient) {
+        return new URLRepositoryImpl(mongoClient);
     }
 }

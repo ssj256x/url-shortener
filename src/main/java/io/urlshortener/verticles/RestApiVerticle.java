@@ -20,7 +20,8 @@ public class RestApiVerticle extends BaseMicroserviceVerticle {
      */
     public Future<Void> createHttpServer(Router router, String host, int port) {
         Promise<HttpServer> promise = Promise.promise();
-        this.vertx.createHttpServer()
+        this.vertx
+                .createHttpServer()
                 .requestHandler(router)
                 .listen(port, host, listen -> {
                     if (listen.succeeded()) promise.complete();

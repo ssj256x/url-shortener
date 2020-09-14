@@ -1,4 +1,4 @@
-package io.urlshortener.util;
+package io.urlshortener.helper;
 
 public class RandomStringGenerator {
 
